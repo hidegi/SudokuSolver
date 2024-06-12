@@ -2,35 +2,6 @@ import java.util.Arrays;
 
 public class Solver {
 
-    private class Cell {
-        private int possibilities;
-        private int answer = -1;
-        private boolean solved = false;
-
-        public Cell() {
-            reset();
-        }
-
-        public void setPossibility(int num, boolean value) {
-            if (num > 0 && num <= 9)
-                possibilities = value ? (possibilities | (1 << (num - 1))) : (possibilities & ~(1 << (num - 1)));
-        }
-
-        public void reset() {
-            possibilities = 0;
-        }
-    }
-
-    private int countBoxPossibilities(int col, int row, int num) {
-        return 0;
-    }
-
-    private Cell[][] grid = new Cell[9][9];
-
-    public Solver() {
-    }
-
-
     static int[][] easyPuzzle =
     {
             {0, 7, 0,   5, 8, 3,    0, 2, 0},
@@ -46,6 +17,19 @@ public class Solver {
             {5, 6, 7,   4, 2, 9,    0, 1, 3},
     };
 
+    static int[][] easyPuzzle2 = {
+            {4, 0, 1,   2, 9, 0,    0, 7, 5},
+            {2, 0, 0,   3, 0, 0,    8, 0, 0},
+            {0, 7, 0,   0, 8, 0,    0, 0, 6},
+
+            {0, 0, 0,   1, 0, 3,    0, 6, 2},
+            {1, 0, 5,   0, 0, 0,    4, 0, 3},
+            {7, 3, 0,   6, 0, 8,    0, 0, 0},
+
+            {6, 0, 0,   0, 2, 0,    0, 3, 0},
+            {0, 0, 7,   0, 0, 1,    0, 0, 4},
+            {8, 9, 0,   0, 6, 5,    1, 0, 7}
+    };
     static int[][] hardPuzzle =
     {
             {0, 0, 6,   3, 0, 7,    0, 0, 0},
@@ -185,16 +169,11 @@ public class Solver {
         return getChecksum(set, index, grid) != -1;
     }
 
-    int ROWS[] = new int[9];
-    int COLUMNS[] = new int[9];
-    int BOXES[] = new int[9];
-
     static int calculatePossibilitiesFor(int num, int index, int[][] grid)
     {
         int possibilities = 0;
         if(isValid(Set.BOX, index, grid)) {
             int checksum = getChecksum(Set.BOX, index, grid);
-
 
             if (hasSet(checksum, num))
                 return 0;
@@ -228,15 +207,9 @@ public class Solver {
                 }
             }
         }
-
-
         return possibilities;
     }
 
-    //372004701
-    //004089006
-
-    //0000 0000 0100 0000 1000 1001 0000 0000 0101
     static long encodeSeries(Set set, int index, int[][] grid)
     {
         long code = 0;
@@ -297,53 +270,35 @@ public class Solver {
         return count;
     }
 
-    public static void main(String[] args) {
-        /*
-        System.out.println(checkValidity(Set.ROW, 1, puzzle));
-        System.out.println(checkValidity(Set.COLUMN, 1, puzzle));
-        System.out.println(checkValidity(Set.BOX ,6, puzzle));
-        System.out.println(countMissingNumbers(Set.ROW, 9, easyPuzzle));
-        System.out.println(countMissingNumbers(Set.BOX, 8, easyPuzzle));
-        */
-        /*
-        long code = encodeSeries(Set.ROW, 5, easyPuzzle);
-        System.out.println(code);
-        decodeSeries(code);
-        System.out.println();
-
-         */
-
+    public static void solve(int[][] puzzle)
+    {
         boolean f = true;
         int iterations = 1000;
+        loopMain:
         for(int k = 0; k < iterations; k++) {
             boolean solved = true;
             for (int i = 0; i < 9; i++) {
-                //System.out.println((i + 1) + ". box: ");
-                int checksum = getChecksum(Set.BOX, i, easyPuzzle);
-                if(checksum != 0x1FF)
-                    solved = false;
-                checksum = getChecksum(Set.ROW, i, easyPuzzle);
-                if(checksum != 0x1FF)
-                    solved = false;
-                checksum = getChecksum(Set.COLUMN, i, easyPuzzle);
+                int checksum = getChecksum(Set.BOX, i, puzzle);
+
                 if(checksum != 0x1FF)
                     solved = false;
 
                 if(solved) {
-                    System.out.println("solved");
-                    break;
+                    break loopMain;
                 }
+
+
                 for (int j = 0; j < 9; j++) {
                     if(hasSet(checksum, j + 1))
                         continue;
 
-                    int possibilities = calculatePossibilitiesFor((j + 1), i, easyPuzzle);
+                    checksum = getChecksum(Set.BOX, i, puzzle);
+                    boolean filler = countRaisedBits(checksum) == 8;
+                    int possibilities = calculatePossibilitiesFor((j + 1), i, puzzle);
+
                     if (possibilities != 0) {
                         int x = i % 3;
                         int y = i / 3;
-
-                        checksum = getChecksum(Set.BOX, i, easyPuzzle);
-                        boolean filler = countRaisedBits(checksum) == 8;
 
                         if (possibilities == 1 || filler)
                         {
@@ -351,21 +306,17 @@ public class Solver {
                             {
                                 for(int n = 0; n < 3; n++)
                                 {
-                                    int cell = easyPuzzle[m + y * 3][n + x * 3];
+                                    int cell = puzzle[m + y * 3][n + x * 3];
                                     if(cell == 0) {
-                                        int colSum = getChecksum(Set.COLUMN, n + x * 3, easyPuzzle);
-                                        int rowSum = getChecksum(Set.ROW, m + y * 3, easyPuzzle);
+                                        int colSum = getChecksum(Set.COLUMN, n + x * 3, puzzle);
+                                        int rowSum = getChecksum(Set.ROW, m + y * 3, puzzle);
 
                                         if (!hasSet(colSum, j + 1) && !hasSet(rowSum, j + 1)) {
-                                            if(filler)
-                                                System.out.println("filler found (" + (j + 1) + ") in box " + (i + 1) + " checksum: " +
-                                                        Integer.toBinaryString((0x1FF & (~(1 << j)))));
-                                            easyPuzzle[m + y * 3][n + x * 3] = j + 1;
+                                            puzzle[m + y * 3][n + x * 3] = j + 1;
                                         }
                                     }
                                 }
                             }
-                            //easyPuzzle[i][j] = (j + 1);
                         }
                     }
                 }
@@ -376,8 +327,8 @@ public class Solver {
         {
             for(int j = 0; j < 9; j++)
             {
-                if(easyPuzzle[i][j] != 0)
-                    System.out.print(easyPuzzle[i][j] + " ");
+                if(puzzle[i][j] != 0)
+                    System.out.print(puzzle[i][j] + " ");
                 else
                     System.out.print("_ ");
                 if((j + 1) % 3 == 0 && (j != 8))
@@ -387,5 +338,9 @@ public class Solver {
             if((i + 1) % 3 == 0 && (i != 8))
                 System.out.println("---------------------");
         }
+    }
+
+    public static void main(String[] args) {
+        solve(hardPuzzle);
     }
 }
