@@ -49,17 +49,17 @@ public class Solver {
     //004089006
     static int[][] puzzle =
             {
-                    {3, 7, 2,   0, 0, 4,    9, 0, 0},
-                    {0, 0, 4,   0, 8, 9,    1, 0, 0},
-                    {7, 0, 1,   0, 0, 6,    2, 5, 3},
+                    {4, 0, 0, 0, 0, 6, 2, 0, 0},
+                    {3, 8, 0, 0, 5, 0, 0, 0, 0},
+                    {0, 1, 0, 2, 0, 0, 7, 5, 3},
 
-                    {0, 0, 1,   0, 0, 0,    1, 2, 3},
-                    {9, 0, 0,   0, 0, 2,    6, 5, 4},
-                    {0, 0, 0,   8, 0, 7,    7, 8, 9},
+                    {6, 5, 1, 9, 0, 0, 0, 7, 4},
+                    {0, 0, 0, 7, 0, 3, 1, 0, 0},
+                    {7, 0, 0, 0, 1, 5, 9, 6, 2},
 
-                    {4, 0, 5,   0, 0, 1,    6, 2, 0},
-                    {2, 3, 7,   0, 0, 0,    5, 0, 1},
-                    {0, 0, 0,   0, 2, 5,    7, 0, 0},
+                    {0, 9, 4, 6, 7, 0, 0, 3, 0},
+                    {1, 0, 0, 0, 0, 9, 8, 0, 0},
+                    {5, 0, 0, 0, 0, 1, 6, 0, 9},
             };
 
     public enum Set
@@ -270,6 +270,18 @@ public class Solver {
         return count;
     }
 
+    /*
+     *  features:
+     *  missing number detection..
+     *  one solution only cells can be found..
+     *  cell deduction..
+     *
+     *  insufficiency:
+     *  pair crossing should be initiated..
+     *  deducible third number from variable pairs should be featured..
+     *  no drafting..
+     *  last digit deduction for rows and columns not possible..
+     */
     public static void solve(int[][] puzzle)
     {
         boolean f = true;
@@ -294,6 +306,15 @@ public class Solver {
 
                     checksum = getChecksum(Set.BOX, i, puzzle);
                     boolean filler = countRaisedBits(checksum) == 8;
+
+                    /*
+                    checksum = getChecksum(Set.ROW, i, puzzle);
+                    filler = filler || countRaisedBits(checksum) == 8;
+
+                    checksum = getChecksum(Set.COLUMN, i, puzzle);
+                    filler = filler || countRaisedBits(checksum) == 8;
+                    */
+
                     int possibilities = calculatePossibilitiesFor((j + 1), i, puzzle);
 
                     if (possibilities != 0) {
@@ -341,6 +362,6 @@ public class Solver {
     }
 
     public static void main(String[] args) {
-        solve(hardPuzzle);
+        solve(easyPuzzle2);
     }
 }
